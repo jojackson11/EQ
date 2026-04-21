@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>EQ Learning</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -21,11 +23,16 @@
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       margin-top: 20px;
-      transition: 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.5s forwards;
     }
 
-    h1, h2, h3 {
-      margin: 0 0 10px;
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .btn {
@@ -37,13 +44,7 @@
       border-radius: 10px;
       background: linear-gradient(135deg, #ff8c00, #ff5e00);
       color: white;
-      font-size: 14px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      transform: scale(1.03);
     }
 
     .option {
@@ -75,7 +76,7 @@
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, orange, red);
-      transition: 0.4s;
+      transition: 0.5s;
     }
 
     .feedback {
@@ -83,9 +84,9 @@
       font-weight: bold;
     }
 
-    .xp {
-      font-size: 14px;
-      color: #666;
+    .emoji {
+      font-size: 24px;
+      margin-right: 8px;
     }
   </style>
 </head>
@@ -94,10 +95,9 @@
 
 <div class="app">
 
-  <!-- Dashboard -->
   <div id="dashboard" class="card">
     <h2>EQ Learning</h2>
-    <p class="xp">XP: <span id="xp">0</span></p>
+    <p>XP: <span id="xp">0</span></p>
 
     <div class="progress">
       <div id="bar" class="bar"></div>
@@ -106,7 +106,6 @@
     <button class="btn" onclick="start()">Start Learning</button>
   </div>
 
-  <!-- Scenario -->
   <div id="scenario" class="card hidden">
     <h3 id="question"></h3>
     <div id="options"></div>
@@ -126,17 +125,17 @@ const data = [
   {
     q: "Your manager interrupts you in a meeting. What do you do?",
     o: [
-      {t:"Interrupt back", s:0, f:"This escalates tension."},
-      {t:"Stay calm & respond later", s:10, f:"Great emotional control."},
-      {t:"Stay silent", s:5, f:"Safe, but misses opportunity."}
+      {t:"😠 Interrupt back", s:0, f:"This escalates tension."},
+      {t:"🙂 Stay calm & respond later", s:10, f:"Excellent emotional control."},
+      {t:"😐 Stay silent", s:5, f:"Safe, but misses opportunity."}
     ]
   },
   {
     q: "A teammate misses deadline.",
     o: [
-      {t:"Call out publicly", s:0, f:"Damages trust."},
-      {t:"Discuss privately", s:10, f:"Strong empathy."},
-      {t:"Ignore", s:5, f:"Short-term fix only."}
+      {t:"😡 Call out publicly", s:0, f:"Damages trust."},
+      {t:"🤝 Discuss privately", s:10, f:"Strong empathy and leadership."},
+      {t:"😶 Ignore", s:5, f:"Short-term fix only."}
     ]
   }
 ];
@@ -159,11 +158,10 @@ function load(){
   d.o.forEach(opt=>{
     let div = document.createElement("div");
     div.className = "option";
-    div.innerText = opt.t;
+    div.innerHTML = opt.t;
 
     div.onclick = ()=>{
-      xp += opt.s;
-      document.getElementById("xp").innerText = xp;
+      animateXP(opt.s);
       feedback.innerText = opt.f;
 
       update();
@@ -176,11 +174,24 @@ function load(){
   });
 }
 
+function animateXP(points){
+  let target = xp + points;
+  let interval = setInterval(()=>{
+    xp++;
+    document.getElementById("xp").innerText = xp;
+
+    if(xp >= target){
+      clearInterval(interval);
+    }
+  }, 50);
+}
+
 function next(){
   index++;
   if(index >= data.length){
-    alert("🎉 Completed!");
-    location.reload();
+    confetti();
+    setTimeout(()=>alert("🎉 Level Completed!"), 300);
+    setTimeout(()=>location.reload(), 1500);
   } else {
     load();
   }
