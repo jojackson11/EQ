@@ -1,35 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>EQ Learning Platform</title>
+  <title>EQ Learning</title>
   <style>
     body {
-      font-family: Arial;
       margin: 0;
-      background: #f7f7f7;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fb;
     }
 
-    .container {
-      padding: 20px;
-      max-width: 600px;
+    .app {
+      max-width: 700px;
       margin: auto;
+      padding: 20px;
     }
 
     .card {
       background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       margin-top: 20px;
+      transition: 0.3s;
     }
 
-    button {
-      background: orange;
+    h1, h2, h3 {
+      margin: 0 0 10px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
       border: none;
-      padding: 10px 15px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff8c00, #ff5e00);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+    }
+
+    .option {
+      background: #f1f3f7;
+      padding: 12px;
+      border-radius: 10px;
       margin-top: 10px;
       cursor: pointer;
-      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    .option:hover {
+      background: #ffe0cc;
     }
 
     .hidden {
@@ -37,131 +64,131 @@
     }
 
     .progress {
-      height: 10px;
-      background: #ddd;
+      height: 8px;
+      background: #eee;
       border-radius: 5px;
+      overflow: hidden;
       margin-top: 10px;
     }
 
-    .progress-bar {
-      height: 10px;
-      background: orange;
+    .bar {
+      height: 100%;
       width: 0%;
-      border-radius: 5px;
+      background: linear-gradient(90deg, orange, red);
+      transition: 0.4s;
+    }
+
+    .feedback {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .xp {
+      font-size: 14px;
+      color: #666;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-  <!-- DASHBOARD -->
+  <!-- Dashboard -->
   <div id="dashboard" class="card">
-    <h2>EQ Learning Dashboard</h2>
-    <p>XP: <span id="xp">0</span></p>
+    <h2>EQ Learning</h2>
+    <p class="xp">XP: <span id="xp">0</span></p>
 
     <div class="progress">
-      <div id="progressBar" class="progress-bar"></div>
+      <div id="bar" class="bar"></div>
     </div>
 
-    <button onclick="startGame()">Start Learning</button>
+    <button class="btn" onclick="start()">Start Learning</button>
   </div>
 
-  <!-- SCENARIO -->
+  <!-- Scenario -->
   <div id="scenario" class="card hidden">
     <h3 id="question"></h3>
-
     <div id="options"></div>
 
-    <p id="feedback"></p>
+    <p id="feedback" class="feedback"></p>
 
-    <button id="nextBtn" class="hidden" onclick="nextScenario()">Next</button>
+    <button id="next" class="btn hidden" onclick="next()">Next</button>
   </div>
 
 </div>
 
 <script>
 let xp = 0;
-let current = 0;
+let index = 0;
 
-const scenarios = [
+const data = [
   {
-    question: "Your manager criticizes you in a meeting. What do you do?",
-    options: [
-      { text: "React immediately", score: 0, feedback: "Reactive behavior reduces trust." },
-      { text: "Stay calm and respond later", score: 10, feedback: "Great emotional control!" },
-      { text: "Ignore completely", score: 5, feedback: "Avoiding helps short-term but not long-term." }
+    q: "Your manager interrupts you in a meeting. What do you do?",
+    o: [
+      {t:"Interrupt back", s:0, f:"This escalates tension."},
+      {t:"Stay calm & respond later", s:10, f:"Great emotional control."},
+      {t:"Stay silent", s:5, f:"Safe, but misses opportunity."}
     ]
   },
   {
-    question: "A teammate misses a deadline. Your response?",
-    options: [
-      { text: "Blame them publicly", score: 0, feedback: "This harms team morale." },
-      { text: "Discuss privately and support", score: 10, feedback: "Strong empathy and leadership." },
-      { text: "Do their work silently", score: 5, feedback: "Helpful, but not sustainable." }
-    ]
-  },
-  {
-    question: "You feel overwhelmed at work. What do you do?",
-    options: [
-      { text: "Snap at colleagues", score: 0, feedback: "Emotional spillover harms relationships." },
-      { text: "Take a break and reset", score: 10, feedback: "Excellent self-awareness!" },
-      { text: "Keep working without pause", score: 5, feedback: "Risk of burnout." }
+    q: "A teammate misses deadline.",
+    o: [
+      {t:"Call out publicly", s:0, f:"Damages trust."},
+      {t:"Discuss privately", s:10, f:"Strong empathy."},
+      {t:"Ignore", s:5, f:"Short-term fix only."}
     ]
   }
 ];
 
-function startGame() {
-  document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById("scenario").classList.remove("hidden");
-  loadScenario();
+function start(){
+  dashboard.classList.add("hidden");
+  scenario.classList.remove("hidden");
+  load();
 }
 
-function loadScenario() {
-  document.getElementById("feedback").innerText = "";
-  document.getElementById("nextBtn").classList.add("hidden");
+function load(){
+  feedback.innerText = "";
+  next.classList.add("hidden");
 
-  let s = scenarios[current];
-  document.getElementById("question").innerText = s.question;
+  let d = data[index];
+  question.innerText = d.q;
 
-  let optionsDiv = document.getElementById("options");
-  optionsDiv.innerHTML = "";
+  options.innerHTML = "";
 
-  s.options.forEach(opt => {
-    let btn = document.createElement("button");
-    btn.innerText = opt.text;
+  d.o.forEach(opt=>{
+    let div = document.createElement("div");
+    div.className = "option";
+    div.innerText = opt.t;
 
-    btn.onclick = () => {
-      xp += opt.score;
+    div.onclick = ()=>{
+      xp += opt.s;
       document.getElementById("xp").innerText = xp;
-      document.getElementById("feedback").innerText = opt.feedback;
+      feedback.innerText = opt.f;
 
-      updateProgress();
+      update();
 
-      document.querySelectorAll("#options button").forEach(b => b.disabled = true);
-      document.getElementById("nextBtn").classList.remove("hidden");
+      document.querySelectorAll(".option").forEach(o=>o.onclick=null);
+      next.classList.remove("hidden");
     };
 
-    optionsDiv.appendChild(btn);
+    options.appendChild(div);
   });
 }
 
-function nextScenario() {
-  current++;
-
-  if (current >= scenarios.length) {
-    alert("🎉 You completed the level!");
+function next(){
+  index++;
+  if(index >= data.length){
+    alert("🎉 Completed!");
     location.reload();
-    return;
+  } else {
+    load();
   }
-
-  loadScenario();
 }
 
-function updateProgress() {
-  let percent = (xp / 30) * 100;
-  document.getElementById("progressBar").style.width = percent + "%";
+function update(){
+  let percent = (xp/20)*100;
+  bar.style.width = percent + "%";
 }
 </script>
 
