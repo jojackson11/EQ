@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EQ Learning Platform</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f7f7f7;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    button {
+      background: orange;
+      border: none;
+      padding: 10px 15px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .progress {
+      height: 10px;
+      background: #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: orange;
+      width: 0%;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="card">
+    <h2>EQ Learning Dashboard</h2>
+    <p>XP: <span id="xp">0</span></p>
+
+    <div class="progress">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <button onclick="startGame()">Start Learning</button>
+  </div>
+
+  <!-- SCENARIO -->
+  <div id="scenario" class="card hidden">
+    <h3 id="question"></h3>
+
+    <div id="options"></div>
+
+    <p id="feedback"></p>
+
+    <button id="nextBtn" class="hidden" onclick="nextScenario()">Next</button>
+  </div>
+
+</div>
+
+<script>
+let xp = 0;
+let current = 0;
+
+const scenarios = [
+  {
+    question: "Your manager criticizes you in a meeting. What do you do?",
+    options: [
+      { text: "React immediately", score: 0, feedback: "Reactive behavior reduces trust." },
+      { text: "Stay calm and respond later", score: 10, feedback: "Great emotional control!" },
+      { text: "Ignore completely", score: 5, feedback: "Avoiding helps short-term but not long-term." }
+    ]
+  },
+  {
+    question: "A teammate misses a deadline. Your response?",
+    options: [
+      { text: "Blame them publicly", score: 0, feedback: "This harms team morale." },
+      { text: "Discuss privately and support", score: 10, feedback: "Strong empathy and leadership." },
+      { text: "Do their work silently", score: 5, feedback: "Helpful, but not sustainable." }
+    ]
+  },
+  {
+    question: "You feel overwhelmed at work. What do you do?",
+    options: [
+      { text: "Snap at colleagues", score: 0, feedback: "Emotional spillover harms relationships." },
+      { text: "Take a break and reset", score: 10, feedback: "Excellent self-awareness!" },
+      { text: "Keep working without pause", score: 5, feedback: "Risk of burnout." }
+    ]
+  }
+];
+
+function startGame() {
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("scenario").classList.remove("hidden");
+  loadScenario();
+}
+
+function loadScenario() {
+  document.getElementById("feedback").innerText = "";
+  document.getElementById("nextBtn").classList.add("hidden");
+
+  let s = scenarios[current];
+  document.getElementById("question").innerText = s.question;
+
+  let optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  s.options.forEach(opt => {
+    let btn = document.createElement("button");
+    btn.innerText = opt.text;
+
+    btn.onclick = () => {
+      xp += opt.score;
+      document.getElementById("xp").innerText = xp;
+      document.getElementById("feedback").innerText = opt.feedback;
+
+      updateProgress();
+
+      document.querySelectorAll("#options button").forEach(b => b.disabled = true);
+      document.getElementById("nextBtn").classList.remove("hidden");
+    };
+
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function nextScenario() {
+  current++;
+
+  if (current >= scenarios.length) {
+    alert("🎉 You completed the level!");
+    location.reload();
+    return;
+  }
+
+  loadScenario();
+}
+
+function updateProgress() {
+  let percent = (xp / 30) * 100;
+  document.getElementById("progressBar").style.width = percent + "%";
+}
+</script>
+
+</body>
+</html>
